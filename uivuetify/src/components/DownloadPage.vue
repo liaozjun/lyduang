@@ -1,23 +1,45 @@
 <template>
   <v-app id="inspire">
-    <v-app-bar      
-      color="white"
+    <v-app-bar
+      dense
       flat
     >
-      <v-container class="py-0 fill-height">
-        <v-avatar
-          class="mr-10"
-          color="grey darken-1"
-          size="32"
-        ></v-avatar>
+      <v-btn
+        dense
+        text
+        :disabled="!downloadM3u8.canDownload"
+        @click="handleDownload"
+      >
+      下载({{m3u8TsCount}})
+      </v-btn>
+      <v-btn
+        dense
+        text
+        :disabled="errorDownloadDisable"
+        @click="handleDownloadErr"
+      >
+      失败下载
+      </v-btn>
+      <v-text-field
+        hide-details        
+        single-line
+        v-model="inputUrl"
+      ></v-text-field>
 
-        <!-- <v-btn
-         dense
-         text
-          @click="showPalyDialog"
-        >
-        播放列表
-        </v-btn> -->
+      <v-btn
+        dense
+        text
+        @click="toggleMarker"
+      >
+      转到
+      </v-btn>
+    </v-app-bar>
+    <!-- <v-app-bar
+      color="white"
+      flat
+      dense
+    >
+      <v-container >
 
         <v-btn
          dense
@@ -36,11 +58,11 @@
           @click:append="toggleMarker"           
           ></v-text-field>
       </v-container>
-    </v-app-bar>
+    </v-app-bar> -->
 
     <v-main class="grey lighten-3" :style="{height:mainHeight,width:'100%'}">
       <v-container style="height:100%;width:100%;margin:0px;max-width:none;">        
-        <webview id="foo" src="http://localhost:8099" style="display:inline-flex; width:100%; height:100%"></webview>       
+        <webview id="foo" src="http://www.baidu.com" style="display:inline-flex; width:100%; height:100%"></webview>       
       </v-container>
     </v-main>
   </v-app>
@@ -49,7 +71,7 @@
 <script>
 var _ = require('lodash');
 var downloadEntity = require('../downloadEntity');
- const rendererService  = require('../rendererService');
+const rendererService  = require('../rendererService');
 export default {
   name:'downloadPage',
   data: () => ({
@@ -75,18 +97,37 @@ export default {
         return `${this.downloadM3u8.m3u8Entity.urls.length}/${success.length}/${failed.length}`;
       }
       return 0;
+    },
+    errorDownloadDisable(){
+      if(this.downloadM3u8.m3u8Entity!=null && this.downloadM3u8.m3u8Entity.urls != undefined){
+         
+        var failed = _.filter(this.downloadM3u8.m3u8Entity.urls,p=>{
+          return p.status == 3
+        });
+        var saved = _.filter(this.downloadM3u8.m3u8Entity.urls,p=>{
+          return p.status == 0
+        });
+        if(saved.length != 0){
+          return true;
+        }
+        return failed.length == 0?true:false;
+      }
+      return true;
     }
   },
   created:function(){
-    rendererService.Init(this);
-    rendererService.setThatDocumnet(document);
-  },
-  mounted:function(){   
-    console.log('downloadpage mounted');
+    rendererService.Init();
     console.log(this.$route.params.winId);
     this.winId = this.$route.params.winId;
+    rendererService.RegisterRenderWindow(this.$route.params.winId,this,document);
+  },
+  mounted:function(){   
+    console.log('downloadpage mounted');  
   },
   methods:{
+    handleDownloadErr(){
+      downloadEntity.downloadErrorTss(this.downloadM3u8.m3u8Entity,this.winId);
+    },
     handleDownload(){
       //console.log(this.downloadM3u8.m3u8Entity);
       let result = window.ipcRenderer.sendSync('handleGetM3u8Entity', this.downloadM3u8.m3u8Entity);
@@ -105,7 +146,12 @@ export default {
       if(httpPos== -1){
         tmpUrl = "http://"+tmpUrl;
       }
-      window.ipcRenderer.sendSync('handleReset', 'handleReset');
+
+      var arg = {
+        winId:this.winId
+      };
+
+      window.ipcRenderer.sendSync('handleReset', arg);
       let fooWebview = document.getElementById('foo');
       fooWebview.loadURL(tmpUrl);
     }

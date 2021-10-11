@@ -45,12 +45,14 @@ function createWindow () {
   //     //homeWindow.webContents.send('WebRequestOnErrorOccurred',details.url);
   //   }
   // });
+  mainService.ConfigInit();
+  mainService.addontest();
+   
   
-  // mainService.addontest();
-  //mainWindow.loadURL("http://localhost:8080");
   // let urlHome = path.join(__dirname, 'dist','index.html');
   // mainWindow.loadFile(urlHome)
   // console.log(urlHome);
+  //mainWindow.loadURL("http://localhost:8080");
   mainWindow.loadURL('http://localhost:9001/');
   mainWindow.openDevTools();//.webContents.openDevTools();
   //homeWindow = mainWindow;

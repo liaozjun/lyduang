@@ -1,3 +1,7 @@
 m3u8/
 node_modules/
 logs/
+addon.node
+lymg.dll
+lygg
+uivuetify/dist/
