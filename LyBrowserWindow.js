@@ -309,70 +309,7 @@ var lyBrowserWindow = {
             arg.allm3u8 = allm3u8;
             arg.txt = '';
         };
-        // win._handleDownloadM3u8Url = function (event,arg){
-        //     try{
-        //         //console.log('handleDownloadM3u8Url:'+JSON.stringify(arg));
-        //         arg.blob = null;          
-        //         const request = net.request({
-        //             method: 'GET',
-        //             url: arg.url,
-        //             session: session.defaultSession,
-        //             useSessionCookies: true
-        //           });
-        //         request.on('error',error=>{
-        //           arg.isError = true;
-        //           arg.message = error;
-        //           mainService._homeWindow.webContents.send('handleDownloadM3u8UrlCompleted',arg);
-        //         });
-        //         request.on('response', (response) => {
-        //           response.on('aborted', ()=>{
-        //             arg.isError = true;
-        //             arg.message = 'response.aborted';
-        //             mainService._homeWindow.webContents.send('handleDownloadM3u8UrlCompleted',arg);
-        //           });
-        //           response.on('error',()=>{
-        //             arg.isError = true;
-        //             arg.message = 'response.error';
-        //             mainService._homeWindow.webContents.send('handleDownloadM3u8UrlCompleted',arg);
-        //           });
-        //           response.on('end', () => {
-        //             var txt = _.toString(arg.blob);
-        //             arg.txt = txt;
-        //             arg.blob = null;
-        //             var first_extinf = txt.indexOf("#EXTINF");
-        //             var last_ENDLIST  = txt.lastIndexOf("#EXT-X-ENDLIST");
-        //             var last_extinf = txt.lastIndexOf("#EXTINF");
-        //             //console.log(first_extinf);
-        //             //console.log(last_ENDLIST);
-        //             if(first_extinf == -1 || last_ENDLIST == -1 || first_extinf == last_extinf){
-        //               //不是m3u8文件
-        //               arg.isM3u8File = false;
-        //               arg.txt = null;
-        //             }else{
-        //               arg.isM3u8File = true;
-        //             }
-        //             arg.isError = false
-        //             mainService._homeWindow.webContents.send('handleDownloadM3u8UrlCompleted',arg);
-        //           });
-              
-        //           response.on('data', (chunk) => {
-        //             if(arg.blob == null){            
-        //               arg.blob = Buffer.concat([chunk]);
-        //             }else{
-        //               arg.blob = Buffer.concat([arg.blob,chunk]);
-        //             }
-        //           });
-              
-        //         });
-        //         request.end();
-        //         arg.isError = false;      
-        //         event.returnValue = arg;
-        //     }catch(err){
-        //         arg.isError = true;
-        //         arg.message = JSON.stringify(err);
-        //         mainService._homeWindow.webContents.send('handleDownloadM3u8UrlCompleted',arg);
-        //     }
-        // };
+        
         return win;
   　}
   }

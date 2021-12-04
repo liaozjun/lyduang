@@ -21,11 +21,12 @@ const mainService = {
     var parms = {
       path:app.getAppPath()
     };
-    addon.ConfigInit(JSON.stringify(parms));
+    var result = addon.ConfigInit(JSON.stringify(parms));
+    //console.log(result);
     app.allowRendererProcessReuse = false;
   },
   addontest:function(){
-    console.log(addon.hello());
+    //console.log(addon.hello());
 
     // var parms = {
     //   id:1,
@@ -39,8 +40,8 @@ const mainService = {
       id:arg.id,
       title:arg.title,
     };
-    addon.update_m3u8_title(JSON.stringify(parms));
-    event.returnValue = {};
+    var result= addon.update_m3u8_title(JSON.stringify(parms));
+    event.returnValue = JSON.parse(result);
   },
   handleDeleteM3u8Sync(event,arg){ 
     var parms = {
@@ -87,15 +88,13 @@ const mainService = {
  
   handleGetM3u8Entity:function(event,arg){
     //console.log(arg);
+    //console.log(JSON.stringify(arg));
     let res = addon.save_m3u8_task(JSON.stringify(arg));
     //console.log(res);
     event.returnValue = JSON.parse(res);
   },
-  _handleReset:function(event,arg){
-    
+  _handleReset:function(event,arg){    
     console.log('handleReset:'+JSON.stringify(arg));
-    // mainGetUrl = [];
-    // mainGetM3u8 = false;
     var dw = _.find(mainService._downloadWindows,win=>win.id==arg.winId);
     if(dw == undefined){
       event.returnValue = "error";
@@ -104,15 +103,6 @@ const mainService = {
     //console.log(dw);
     event.returnValue = dw.handleReset();
   },
-  // _handleDownloadM3u8Url: function (event,arg) {     
-  //   var dw = _.find(mainService._downloadWindows,win=>win.id == arg.winId);
-  //   if(dw == undefined){
-  //     console.log('can not find downloadwindow');
-  //     return ;
-  //   }
-  //   arg.dw = dw;
-  //   dw._handleDownloadM3u8Url(event,arg);    
-  // },
   _handleDownloadSelTsUrl:function(event,arg){
   
     var dw = _.find(mainService._downloadWindows,win=>win.id == arg.winId);

@@ -131,10 +131,12 @@ export default {
     handleDownload(){
       //console.log(this.downloadM3u8.m3u8Entity);
       let result = window.ipcRenderer.sendSync('handleGetM3u8Entity', this.downloadM3u8.m3u8Entity);
-      console.log(result);
+      //console.log(result);
       if(result.code == 200){
         this.downloadM3u8.m3u8Entity = result.data;
         downloadEntity.downloadTss(this.downloadM3u8.m3u8Entity,this.winId)
+      }else{
+        alert(result.message);
       }
     },
     // showPalyDialog(){
