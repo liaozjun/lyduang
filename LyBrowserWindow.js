@@ -3,7 +3,7 @@ const path = require('path')
 var _ = require('lodash');
 const fs = require('fs');
 const { session,net } = require('electron')
-
+const { webContents } = require('electron')
 var lyBrowserWindow = {
     createNew: function(){
         var win = {};
@@ -33,7 +33,7 @@ var lyBrowserWindow = {
             //self._browserWindow.loadURL(`http://localhost:8080/#/DownloadPage/${self._browserWindow.id}`);
             self._browserWindow.loadURL(`http://localhost:9001/#/DownloadPage/${self._browserWindow.id}`);
             self._browserWindow.once('close', (event,args) => {
-              //console.log("once:"+self._browserWindow.id)
+              console.log("once close:"+self._browserWindow.id)
               removeDownloadWindows(self._browserWindow.id);                
             });
     
@@ -41,23 +41,80 @@ var lyBrowserWindow = {
                 self._browserWindow.show()
                 self._browserWindow.openDevTools();
             });
-            self._browserWindow.webContents.session.webRequest.onCompleted((details) => {    
-                if(details.url != undefined && details.url != null &&
-                    details.url.indexOf('devtools://') == -1 
-                    //details.url.indexOf('localhost') == -1 
-                    ){
-                    //homeWindow.webContents.send('WebRequestOnCompleted',details.url);
-                    //console.log('WebRequestOnCompleted'+ details.url); 下载流程 rendererservice要new
-                    self.DownloadM3u8Url(details.url,self._browserWindow);
+             
+            self._browserWindow.webContents.session.webRequest.onCompleted((details)=>{
+              if(details.url != undefined && details.url != null && details.url.indexOf('devtools://') == -1 ){
+                //homeWindow.webContents.send('WebRequestOnCompleted',details.url);
+                
+                //self.DownloadM3u8Url(details.url,self._browserWindow);
+                if(details.webContentsId != undefined){                
+                  let tmpwebContents = webContents.fromId(details.webContentsId);
+                  if(tmpwebContents != undefined){
+                    if(tmpwebContents.hostWebContents != undefined){
+                      let tmpbw = BrowserWindow.fromWebContents(tmpwebContents.hostWebContents);
+                      if(tmpbw!= undefined){
+                        self.DownloadM3u8Url(details.url,tmpbw);
+                        //tmpbw.webContents.send('WebRequestOnErrorOccurred',`tmpbw:${tmpbw.id},${details.url}`);
+                        //console.log(`WebRequestOnCompleted:${tmpbw.id},${details.url}`);
+                      }else{
+                        console.log('tmpbw is undefined')
+                      }
+                    }
+                  }
                 }
+              }
             });
+
             self._browserWindow.webContents.session.webRequest.onErrorOccurred((details) => {
                 if(details.url != undefined && details.url != null && details.url.indexOf('devtools://') == -1){
-                    //homeWindow.webContents.send('WebRequestOnErrorOccurred',details.url);
+                  if(details.webContentsId != undefined){                
+                    let tmpwebContents = webContents.fromId(details.webContentsId);
+                    if(tmpwebContents != undefined){
+                      if(tmpwebContents.hostWebContents != undefined){
+                        let tmpbw = BrowserWindow.fromWebContents(tmpwebContents.hostWebContents);
+                        if(tmpbw!= undefined){
+                          tmpbw.webContents.send('WebRequestOnErrorOccurred',details.url);
+                          console.log(`WebRequestOnCompleted:${tmpbw.id},${details.url}`);
+                        }else{
+                          console.log('tmpbw is undefined')
+                        }
+                      }
+                    }
+                  }
+                    
                 }
             });
             
         };
+        win.WebRequestOnCompleted = function(details){
+          console.log(`WebRequestOnCompleted:${self._browserWindow.id}`);
+          // if(details.url != undefined && details.url != null &&
+          //     details.url.indexOf('devtools://') == -1 
+          //     //details.url.indexOf('localhost') == -1 
+          //     ){
+          //     //homeWindow.webContents.send('WebRequestOnCompleted',details.url);
+          //     if(details.webContentsId != undefined){                
+          //       let tmpwebContents = webContents.fromId(details.webContentsId);
+          //       console.log('details.webContentsId '+details.webContentsId);
+          //       if(tmpwebContents != undefined){
+          //         let tmpbw = BrowserWindow.fromWebContents(tmpwebContents);
+          //         if(tmpbw!= undefined){
+          //           console.log(`WebRequestOnCompleted:${tmpbw.id}`);
+          //         }else{
+          //           console.log('tmpbw is undefined')
+          //         }
+          //       }else{
+          //         console.log('tmpwebContents is undefined')
+          //       }
+                
+          //     }else{
+          //       console.log('details.webContentsId is undefined')
+          //     }
+          //     // 
+          //     // 
+          //     //self.DownloadM3u8Url(details.url,self._browserWindow);
+          // }
+        },
         win._handleDownloadSelTsUrl = function(event,arg,dw){
             try{
                 //console.log('_handleDownloadSelTsUrl'+JSON.stringify(arg));
@@ -165,18 +222,16 @@ var lyBrowserWindow = {
               return;
             }
             self.mainGetUrl.push(url);
+            var arg ={
+              blob : null,
+              url:url,
+              isError :true,
+              message :'',
+              isM3u8File:false,
+              txt:null,
+              winId:downloadWindow.id
+            };
             try{
-              
-                var arg ={
-                    blob : null,
-                    url:url,
-                    isError :true,
-                    message :'',
-                    isM3u8File:false,
-                    txt:null,
-                    winId:downloadWindow.id
-                };
-              
                 //console.log('DownloadM3u8Url:'+JSON.stringify(arg));
                 const request = net.request({
                     method: 'GET',
@@ -228,7 +283,7 @@ var lyBrowserWindow = {
                           self.mainGetM3u8 = true;
                           arg.isError = false;
                           self.AnalysM3u8(arg);
-                          console.log(`${arg.isM3u8File},${arg.isError},mainGetM3u8:${self.mainGetM3u8}`);
+                          console.log(`${arg.isM3u8File},${arg.isError},mainGetM3u8:${self.mainGetM3u8},winId:${arg.winId}`);
                           //console.log(arg);
                           if(!downloadWindow.isDestroyed()){
                             downloadWindow.webContents.send('handleDownloadM3u8UrlCompleted',arg);

@@ -56,7 +56,7 @@ const mainService = {
     event.returnValue = JSON.parse(result);
   },
   removeDownloadWindows:function(winId){
-    //console.log("removeDownloadWindows:"+winId)
+    console.log("removeDownloadWindows:"+winId)
     //console.log("find:"+ JSON.stringify(mainService._downloadWindows));
     var dw = _.find(mainService._downloadWindows,win=>win.id == winId);
     
@@ -70,13 +70,14 @@ const mainService = {
     }
   },
   handleShowWindow:function(event,arg){    
-    if( mainService._downloadWindows.length == 0){
+    //if( mainService._downloadWindows.length == 0){
       var tmp_bw = lyBrowserWindow.createNew();
       tmp_bw.init(mainService.removeDownloadWindows);
       mainService._downloadWindows.push(tmp_bw);
-      console.log("handleShowWindow1:"+ JSON.stringify(mainService._downloadWindows));
-      console.log("handleShowWindow:"+tmp_bw._browserWindow.id);
-    }
+      //console.log("handleShowWindow1:"+ JSON.stringify(mainService._downloadWindows));
+      console.log("add handleShowWindow:"+tmp_bw._browserWindow.id);
+      //console.log(mainService._downloadWindows);
+    //}
     event.returnValue = {};
   },
   StartHttp:function(){

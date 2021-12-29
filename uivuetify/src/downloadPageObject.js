@@ -13,7 +13,7 @@ var downloadPageObject = {
                 console.log("_handleDownloadM3u8UrlCompleted error:"+ JSON.stringify(arg));
                 return ;
             }  
-            //console.log("_handleDownloadM3u8UrlCompleted func:"+ JSON.stringify(arg));      
+            console.log("_handleDownloadM3u8UrlCompleted func:"+ JSON.stringify(arg));      
             if(arg.isM3u8File){
                 let webview = self.document.getElementById('foo');
                 arg.title = webview.getTitle();

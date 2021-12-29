@@ -282,6 +282,7 @@ var _ = require('lodash');
       handleShowEditDialog(link){
          this.editDialog.item = link;
          this.editDialog.visiable=true;
+         this.queryList();
       },
       handleEdit(){
         var arg = {
@@ -327,6 +328,7 @@ var _ = require('lodash');
         console.log(url);
         this.$refs.dpplayer.dp.switchVideo({ url: url});
         this.$refs.dpplayer.dp.play();
+        
       },
       handlePlay(link){
         this.$refs.dpplayer.dp.pause();
@@ -334,6 +336,7 @@ var _ = require('lodash');
         console.log(url);
         this.$refs.dpplayer.dp.switchVideo({ url: url});
         this.$refs.dpplayer.dp.play();
+        this.drawer = false;
       }
     }
   }

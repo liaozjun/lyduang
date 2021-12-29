@@ -4,6 +4,7 @@
       dense
       flat
     >
+    {{winId}}
       <v-btn
         dense
         text
@@ -71,7 +72,7 @@
 <script>
 var _ = require('lodash');
 var downloadEntity = require('../downloadEntity');
-const rendererService  = require('../rendererService');
+//const rendererService  = require('../rendererService');
 export default {
   name:'downloadPage',
   data: () => ({
@@ -81,6 +82,7 @@ export default {
        winId:0,
      },
      inputUrl:'',
+     winId:0,
   }),
   computed:{
     mainHeight(){
@@ -116,15 +118,53 @@ export default {
     }
   },
   created:function(){
-    rendererService.Init();
+    //rendererService.Init();
     console.log(this.$route.params.winId);
     this.winId = this.$route.params.winId;
-    rendererService.RegisterRenderWindow(this.$route.params.winId,this,document);
+    
+    window.ipcRenderer.on("WebRequestOnErrorOccurred", this._WebRequestOnErrorOccurred);
+    window.ipcRenderer.on("handleDownloadM3u8UrlCompleted",this._handleDownloadM3u8UrlCompleted);
+    window.ipcRenderer.on("onDownloadSelTsUrlCompleted",this._onDownloadSelTsUrlCompleted);
+    //rendererService.RegisterRenderWindow(this.$route.params.winId,this,document);
   },
   mounted:function(){   
     console.log('downloadpage mounted');  
+    let webview = document.getElementById('foo');
+    webview.addEventListener('did-stop-loading', ()=>{
+        console.log('did-stop-loading foo getWebContentsId:'+webview.getWebContentsId());
+    });
+    
   },
   methods:{
+    _WebRequestOnErrorOccurred:function(event,arg){
+      console.log(this.winId+"WebRequestOnErrorOccurred:"+JSON.stringify(arg));
+    },
+    _handleDownloadM3u8UrlCompleted:function(event,arg){
+      var self = this;
+      
+      if(arg.isError){
+          console.log(this.winId+"_handleDownloadM3u8UrlCompleted error:"+ JSON.stringify(arg));
+          return ;
+      }  
+      console.log(this.winId+"_handleDownloadM3u8UrlCompleted func:"+ JSON.stringify(arg));      
+      if(arg.isM3u8File){
+          let webview = document.getElementById('foo');
+          arg.title = webview.getTitle();
+          //console.log(JSON.stringify(arg));
+          self.downloadM3u8.canDownload = true;
+          self.downloadM3u8.m3u8Entity = arg;
+      }
+    },
+    _onDownloadSelTsUrlCompleted:function(event,arg){
+       var self = this;
+      // console.log("_onDownloadSelTsUrlCompleted:"+ JSON.stringify(arg));
+       var tstmp = _.find(self.downloadM3u8.m3u8Entity.urls,p=>p.url == arg.url);       
+       if(tstmp !=undefined){
+           tstmp.status = arg.status;
+           tstmp.isError = arg.isError;
+       }
+       downloadEntity.downloadTs(self.downloadM3u8.m3u8Entity,arg.winId);
+    },
     handleDownloadErr(){
       downloadEntity.downloadErrorTss(this.downloadM3u8.m3u8Entity,this.winId);
     },
