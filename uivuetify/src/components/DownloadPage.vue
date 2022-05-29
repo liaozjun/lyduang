@@ -130,10 +130,18 @@ export default {
   mounted:function(){   
     console.log('downloadpage mounted');  
     let webview = document.getElementById('foo');
-    webview.addEventListener('did-stop-loading', ()=>{
-        console.log('did-stop-loading foo getWebContentsId:'+webview.getWebContentsId());
+    webview.addEventListener('did-start-loading', ()=>{
+        console.log('did-stop-loading foo getWebContentsId:',webview.getURL());
+        //this.inputUrl = webview.getURL();
     });
-    
+    webview.addEventListener('did-finish-load',()=>{
+      //console.log('getURL',webview.getURL());
+      this.inputUrl = webview.getURL();
+    });
+    webview.addEventListener('new-window',(e)=>{
+      console.log('new-window',e.url);
+      this.inputUrl = e.url;
+    });
   },
   methods:{
     _WebRequestOnErrorOccurred:function(event,arg){
